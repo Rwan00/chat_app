@@ -1,8 +1,6 @@
 import 'package:chat_app/theme/fonts.dart';
 import 'package:flutter/material.dart';
 
-
-
 class InputField extends StatelessWidget {
   final String title;
   final String hint;
@@ -10,6 +8,7 @@ class InputField extends StatelessWidget {
   final Widget? widget;
   final TextInputType? textType;
   final String? Function(String?)? validator;
+  final void Function(String?)? onSaved;
 
   const InputField(
       {required this.title,
@@ -18,6 +17,7 @@ class InputField extends StatelessWidget {
       this.widget,
       this.textType,
       this.validator,
+      this.onSaved,
       super.key});
 
   @override
@@ -35,6 +35,7 @@ class InputField extends StatelessWidget {
               height: 8,
             ),
             TextFormField(
+              onSaved: onSaved,
               validator: validator,
               controller: controller,
               keyboardType: textType,
