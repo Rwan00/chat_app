@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:chat_app/theme/fonts.dart';
+import 'package:chat_app/widgets/user_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -74,6 +75,8 @@ class _AuthScreenState extends State<AuthScreen> {
                     key: _formKey,
                     child: Column(
                       children: [
+                        if(!_isLogin)
+                        const UserImagePicker(),
                         InputField(
                           hint: "Enter Your Email",
                           title: 'Email',
