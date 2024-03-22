@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:chat_app/theme/fonts.dart';
 import 'package:chat_app/widgets/user_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +22,7 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _isLogin = true;
+  var _enteredUserName = "";
   var _enteredEmail = "";
   var _enteredPassword = "";
   File? _selectedImage;
@@ -43,6 +45,7 @@ class _AuthScreenState extends State<AuthScreen> {
       } else {
         final UserCredential userCredential =
             await _firebase.createUserWithEmailAndPassword(
+              
           email: _enteredEmail,
           password: _enteredPassword,
         );
@@ -53,6 +56,15 @@ class _AuthScreenState extends State<AuthScreen> {
         await storageRef.putFile(_selectedImage!);
         final imgUrl = await storageRef.getDownloadURL();
         log(imgUrl);
+
+       await FirebaseFirestore.instance
+            .collection("users")
+            .doc(userCredential.user!.uid)
+            .set({
+          "userName": _enteredUserName,
+          "email": _enteredEmail,
+          "image_url": imgUrl,
+        });
       }
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).clearSnackBars();
@@ -84,7 +96,7 @@ class _AuthScreenState extends State<AuthScreen> {
               child: Image.asset("assets/logo.jpg"),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              padding: const EdgeInsets.symmetric(horizontal: 24.0,vertical: 12),
               child: Card(
                 child: Padding(
                   padding: const EdgeInsets.all(24.0),
@@ -98,6 +110,21 @@ class _AuthScreenState extends State<AuthScreen> {
                               _selectedImage = pickedImage;
                             },
                           ),
+                          if(!_isLogin)
+                        InputField(
+                          hint: "Enter Your UserName",
+                          title: 'UserName',
+                          textType: TextInputType.emailAddress,
+                          onSaved: (value) => _enteredUserName = value!,
+                          validator: (value) {
+                            if (value == null ||
+                                value.trim().length<4 ) {
+                              return "UserName Must be at least 4 characters!";
+                            } else {
+                              return null;
+                            }
+                          },
+                        ),
                         InputField(
                           hint: "Enter Your Email",
                           title: 'Email',
@@ -129,21 +156,20 @@ class _AuthScreenState extends State<AuthScreen> {
                         const SizedBox(
                           height: 24,
                         ),
-                        if(_isUploading)
-                        const CircularProgressIndicator(),
-                        if(!_isUploading)
-                        ElevatedButton(
-                          onPressed: _submit,
-                          style: ButtonStyle(
-                            backgroundColor: MaterialStateProperty.all(
-                              const Color.fromARGB(255, 68, 0, 80),
+                        if (_isUploading) const CircularProgressIndicator(),
+                        if (!_isUploading)
+                          ElevatedButton(
+                            onPressed: _submit,
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all(
+                                const Color.fromARGB(255, 68, 0, 80),
+                              ),
+                            ),
+                            child: Text(
+                              _isLogin ? "Login" : "Sign Up",
+                              style: titleStyle.copyWith(color: Colors.white),
                             ),
                           ),
-                          child: Text(
-                            _isLogin ? "Login" : "Sign Up",
-                            style: titleStyle.copyWith(color: Colors.white),
-                          ),
-                        ),
                         TextButton(
                           onPressed: () {
                             setState(() {
