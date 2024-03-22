@@ -37,7 +37,6 @@ class _AuthScreenState extends State<AuthScreen> {
         _isUploading = true;
       });
       if (_isLogin) {
-        final UserCredential userCredential =
             await _firebase.signInWithEmailAndPassword(
           email: _enteredEmail,
           password: _enteredPassword,
