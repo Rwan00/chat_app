@@ -36,7 +36,7 @@ class _NewMessageState extends State<NewMessage> {
         .get();
 
     await FirebaseFirestore.instance.collection("chats").add({
-      "text": enteredMessage,
+      "text": enteredMessage == "اسرائيل"? "فلسطين":enteredMessage,
       "createdAt": Timestamp.now(),
       "userId": user.uid,
       "userName": userData.data()!["userName"],

@@ -114,7 +114,6 @@ class _AuthScreenState extends State<AuthScreen> {
                         InputField(
                           hint: "Enter Your UserName",
                           title: 'UserName',
-                          textType: TextInputType.emailAddress,
                           onSaved: (value) => _enteredUserName = value!,
                           validator: (value) {
                             if (value == null ||
