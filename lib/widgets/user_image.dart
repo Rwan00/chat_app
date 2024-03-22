@@ -1,11 +1,17 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:io';
 
-import 'package:chat_app/theme/fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import 'package:chat_app/theme/fonts.dart';
+
 class UserImagePicker extends StatefulWidget {
-  const UserImagePicker({super.key});
+  final void Function(File pickedImage) onPickImage;
+  const UserImagePicker({
+    Key? key,
+    required this.onPickImage,
+  }) : super(key: key);
 
   @override
   State<UserImagePicker> createState() => _UserImagePickerState();
@@ -25,16 +31,18 @@ class _UserImagePickerState extends State<UserImagePicker> {
     setState(() {
       _pickedImageFile = File(pickedImage.path);
     });
+    widget.onPickImage(_pickedImageFile!);
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-         CircleAvatar(
+        CircleAvatar(
           radius: 40,
           backgroundColor: Colors.grey,
-          foregroundImage:_pickedImageFile == null?null: FileImage(_pickedImageFile!),
+          foregroundImage:
+              _pickedImageFile == null ? null : FileImage(_pickedImageFile!),
         ),
         TextButton.icon(
           onPressed: _pickImage,

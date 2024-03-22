@@ -1,8 +1,10 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:chat_app/theme/fonts.dart';
 import 'package:chat_app/widgets/user_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/input_field.dart';
@@ -21,14 +23,19 @@ class _AuthScreenState extends State<AuthScreen> {
   bool _isLogin = true;
   var _enteredEmail = "";
   var _enteredPassword = "";
+  File? _selectedImage;
+  var _isUploading = false;
   void _submit() async {
     final valid = _formKey.currentState!.validate();
-    if (!valid) {
+    if (!valid || (!_isLogin && _selectedImage == null)) {
       return;
     }
     try {
+      setState(() {
+        _isUploading = true;
+      });
       if (_isLogin) {
-         final UserCredential userCredential =
+        final UserCredential userCredential =
             await _firebase.signInWithEmailAndPassword(
           email: _enteredEmail,
           password: _enteredPassword,
@@ -39,6 +46,13 @@ class _AuthScreenState extends State<AuthScreen> {
           email: _enteredEmail,
           password: _enteredPassword,
         );
+        final storageRef = FirebaseStorage.instance
+            .ref()
+            .child("user_images")
+            .child("${userCredential.user!.uid}.jpg");
+        await storageRef.putFile(_selectedImage!);
+        final imgUrl = await storageRef.getDownloadURL();
+        log(imgUrl);
       }
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).clearSnackBars();
@@ -50,6 +64,9 @@ class _AuthScreenState extends State<AuthScreen> {
           ),
         ),
       );
+      setState(() {
+        _isUploading = false;
+      });
     }
 
     _formKey.currentState!.save();
@@ -75,8 +92,12 @@ class _AuthScreenState extends State<AuthScreen> {
                     key: _formKey,
                     child: Column(
                       children: [
-                        if(!_isLogin)
-                        const UserImagePicker(),
+                        if (!_isLogin)
+                          UserImagePicker(
+                            onPickImage: (File pickedImage) {
+                              _selectedImage = pickedImage;
+                            },
+                          ),
                         InputField(
                           hint: "Enter Your Email",
                           title: 'Email',
@@ -108,6 +129,9 @@ class _AuthScreenState extends State<AuthScreen> {
                         const SizedBox(
                           height: 24,
                         ),
+                        if(_isUploading)
+                        const CircularProgressIndicator(),
+                        if(!_isUploading)
                         ElevatedButton(
                           onPressed: _submit,
                           style: ButtonStyle(
