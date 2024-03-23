@@ -80,7 +80,7 @@ class _AuthScreenState extends State<AuthScreen> {
       });
     }
 
-    _formKey.currentState!.save();
+    _formKey.currentState?.save();
     log(_enteredEmail);
     log(_enteredPassword);
   }
